@@ -6,11 +6,11 @@ Logfile initialized
 [DEBUG] Waiting for device to be ready ...
 [TRACE] adb devices returned 1 devices/emulators
 [DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.045000 seconds on emulator to get ready
+[DEBUG] waited 0.040000 seconds on emulator to get ready
 [DEBUG] com.nltd.t installed? True
 [INFO] Fastdev server running, deploying in Fastdev mode
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: D:\work\Android\Titanium Studio Workspace\com.nltd.t\Resources\ui\common\ImagesView.js => D:\work\Android\Titanium Studio Workspace\com.nltd.t\build\android\bin\assets\Resources\ui\common\ImagesView.js
+[TRACE] COPYING MODIFIED FILE: D:\work\Android\Titanium Studio Workspace\com.nltd.t\Resources\ui\common\AlbumView.js => D:\work\Android\Titanium Studio Workspace\com.nltd.t\build\android\bin\assets\Resources\ui\common\AlbumView.js
 [INFO] Tiapp.xml unchanged, skipping class generation
 [DEBUG] Processing Android resource drawables
 [DEBUG] found drawable-long-land-hdpi splash screen at D:\work\Android\Titanium Studio Workspace\com.nltd.t\Resources\android\images\res-long-land-hdpi\default.png
@@ -28,3 +28,4 @@ Logfile initialized
 [INFO] Launching application ... com.nltd.t
 [TRACE] Launch output: Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=com.nltd.t/.ComNltdTActivity }
 Warning: Activity not started, its current task has been brought to the front
+

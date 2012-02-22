@@ -13,8 +13,15 @@ function ImagesView() {
 	self.add(table);
 	*/
 	self.addEventListener('imageSelected', function(e) {
-		
-		var url = "http://192.168.98.203:8080/catalog/pegasus/get_images_album.jsp?albumId="+e.albumid+"&userid="+e.userid;
+		if( self.children ){
+			  while( self.children.length > 0 ) {
+			    //Ti.API.info( 'Number of children: ' + possibleTagViewArea.children.length );
+			    self.remove( self.children[0] );
+			    //wait(10);
+			    //Ti.API.info( 'Deleted child at 0' );
+		  }
+		}
+		var url = "https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_images_album.jsp?albumId="+e.albumid+"&userid="+e.userid;
 		 //url='http://maps.googleapis.com/maps/api/geocode/json?address=tianjin&region=us&sensor=true';
 		 Ti.API.info("url: " + url);
 		 var client = Ti.Network.createHTTPClient({

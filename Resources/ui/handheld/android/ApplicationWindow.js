@@ -73,6 +73,10 @@ function ApplicationWindow() {
 		detailView.fireEvent('itemSelected',e);
 		detailContainerWindow.open();
 	});
+	uploadphoto.addEventListener('uploadopen', function(e) {
+		uploadphoto.fireEvent('openuploadwindow',e);
+		//uploadphotoContainerWindow.open();
+	});
 	return self;
 };
 
