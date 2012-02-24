@@ -73,9 +73,11 @@ function ApplicationWindow() {
 		detailView.fireEvent('itemSelected',e);
 		detailContainerWindow.open();
 	});
-	uploadphoto.addEventListener('uploadopen', function(e) {
-		uploadphoto.fireEvent('openuploadwindow',e);
-		//uploadphotoContainerWindow.open();
+	imagesView.addEventListener('uploadopen', function(e) {
+		//Ti.API.info("after click");
+		uploadphoto.fireEvent('uploadimage',e);
+		uploadphotoContainerWindow.open();
+		//Ti.API.info("opend");
 	});
 	return self;
 };

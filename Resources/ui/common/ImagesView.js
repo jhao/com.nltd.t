@@ -1,6 +1,6 @@
 function ImagesView() {
 	var self = Ti.UI.createView({
-		backgroundColor:'white'
+		backgroundColor:'white',
 	});
 	
 	//some dummy data for our table view
@@ -12,6 +12,8 @@ function ImagesView() {
 	
 	self.add(table);
 	*/
+
+	
 	self.addEventListener('imageSelected', function(e) {
 		if( self.children ){
 			  while( self.children.length > 0 ) {
@@ -21,6 +23,8 @@ function ImagesView() {
 			    //Ti.API.info( 'Deleted child at 0' );
 		  }
 		}
+		var albumid=e.albumid;
+		var userid=e.userid;
 		var url = "https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_images_album.jsp?albumId="+e.albumid+"&userid="+e.userid;
 		 //url='http://maps.googleapis.com/maps/api/geocode/json?address=tianjin&region=us&sensor=true';
 		 Ti.API.info("url: " + url);
@@ -34,12 +38,13 @@ function ImagesView() {
 		         if(res)
 		         {
 		         	 var res_images=res.albumImages;
-					 var table = Ti.UI.createTableView();
+					 var table = Ti.UI.createTableView({top:40});
 					 var currentData = [];
 					 for (var i=0;i<res_images.length;i++) {
 					 	var tweet = res_images[i];
 					 	var row = Ti.UI.createTableViewRow(  
 				            {  
+				                top:40,
 				                height: 'auto',  
 				                layout: 'absolute',
 				                title:tweet.title,
@@ -84,13 +89,22 @@ function ImagesView() {
 				        // commentLabel.text = tweet.title;  
 				        // row.add(commentLabel);
 				        //row.setData()
-				        
-				        
 				        currentData.push(row);
 					 }
 					 table.setData(currentData);
 					 self.add(table);
-					 
+					 var btn= Ti.UI.createButton({
+						top:5,
+						left:5,
+						width:'auto',
+						height:30,
+						title:'upload photo'
+					 });
+					 btn.addEventListener('click', function(e) {
+						//Ti.API.info("upload btn click:"+e.albumid+"-"+e.userid);
+						self.fireEvent('uploadopen', {albumid:albumid,userid:userid});
+					 });
+					 self.add(btn);
 					 table.addEventListener('click', function(e) {
 						Ti.API.info("e.rowData,: " + e.rowData.title +","+e.rowData.V+","+e.rowData.Width);
 						self.fireEvent('imagesSelected', {

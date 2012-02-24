@@ -65,13 +65,13 @@ function MasterView() {
 		// });
 	// });
 	
-	var btn= Ti.UI.createButton({
-		top:60,
-		left:115,
-		width:100,
-		height:30,
-		title:'upload photo'
-	});
+	// var btn= Ti.UI.createButton({
+		// top:60,
+		// left:115,
+		// width:100,
+		// height:30,
+		// title:'upload photo'
+	// });
 	var sitecdbtn= Ti.UI.createButton({
 		top:60,
 		left:5,
@@ -98,11 +98,12 @@ function MasterView() {
 		selection.show();
 	});
 	
-	btn.addEventListener('click', function(e) {
-		self.fireEvent('uploadopen', e);
-	});
+	// btn.addEventListener('click', function(e) {
+		// Ti.API.info("upload btn click");
+		// self.fireEvent('uploadopen', e);
+	// });
 	self.add(sitecdbtn)
-	self.add(btn);
+	//self.add(btn);
 	self.add(gobtn);
 	return self;
 };
