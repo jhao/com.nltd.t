@@ -2,17 +2,10 @@ function AlbumView() {
 	var self = Ti.UI.createView({
 		backgroundColor:'white'
 	});
-	
-	//some dummy data for our table view
-	/*var tableData = [];
-	
-	var table = Ti.UI.createTableView({
-		data:tableData
-	});
-	
-	self.add(table);
-	*/
+
 	self.addEventListener('userSelected', function(e) {
+		self.fireEvent('showprocess', e);
+		// initialize the window.
 		if( self.children ){
 			  while( self.children.length > 0 ) {
 			    //Ti.API.info( 'Number of children: ' + possibleTagViewArea.children.length );
@@ -21,12 +14,17 @@ function AlbumView() {
 			    //Ti.API.info( 'Deleted child at 0' );
 		  }
 		}
+		// save the parameter values
 		var sidecode=e.sitecode;
-		var url = "https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_useridbyemail.jsp?email="+e.name+"&siteCode="+e.sitecode;
+		var useremail=e.name;
+		
+		//var url = "https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_useridbyemail.jsp?email="+e.name+"&siteCode="+e.sitecode;
+		var url =  Titanium.App.Properties.getString('url')+"/catalog/pegasus/get_useridbyemail.jsp?email="+e.name+"&siteCode="+e.sitecode;
 		 //url='http://maps.googleapis.com/maps/api/geocode/json?address=tianjin&region=us&sensor=true';
 		 Ti.API.info("get_useridbyemail url :" + url);
+		 //create a network object
 		 var client = Ti.Network.createHTTPClient({
-		     // function called when the response data is available
+		     // get the useid from url
 		     onload : function(e) {
 		         Ti.API.info("Received text: " + this.responseText);
 				 {
@@ -37,51 +35,51 @@ function AlbumView() {
 				 		alert('there some wrong with your input \n please goback and check your input');
 				 		return;
 				 	}
-				 	var suburl="https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_album_list.jsp?userid="+userid;
+				 	//var suburl="https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_album_list.jsp?userid="+userid;
+				 	var suburl=Titanium.App.Properties.getString('url')+"/catalog/pegasus/get_album_list.jsp?userid="+userid;
 				 	Ti.API.info("suburl: " + suburl);
 				 	var clientsub = Ti.Network.createHTTPClient({
-						     onload : function(e) {
-						     	
-						     	 var retstr= this.responseText.replace(/\r\n/g,"").replace(/\n/g,"").replace(',	]',']');
-						         if(retstr.indexOf('<')>-1)
-								 {
-									alert('No User in '+sidecode);
-									return;
-								 }
-						         Ti.API.info("subReceived text: " + retstr);
-						         res=JSON.parse(retstr.replace(/CatalogName/g,"title"));
-						         Ti.API.info("subReceived text: " + res);
-						         if(res)
-						         {
-						         	if (self && self.children && self.children[0]) {
-									    self.remove(self.children[0]);
-									}
-						         	var table = Ti.UI.createTableView({
-										data:res.albums
+						// get the album list from url
+						onload : function(e) {
+							// delete the unuseful content from the result
+					     	 var retstr= this.responseText.replace(/\r\n/g,"").replace(/\n/g,"").replace(',	]',']');
+					         if(retstr.indexOf('<')>-1)
+							 {
+								alert('No User in '+sidecode);
+								return;
+							 }
+					         Ti.API.info("subReceived text: " + retstr);
+					         res=JSON.parse(retstr.replace(/CatalogName/g,"title"));
+					         Ti.API.info("subReceived text: " + res);
+					         if(res)
+					         {
+					         	// bind the data to table
+					         	if (self && self.children && self.children[0]) {
+								    self.remove(self.children[0]);
+								}
+					         	var table = Ti.UI.createTableView({
+									data:res.albums
+								});
+								self.add(table);
+								table.addEventListener('click', function(e) {
+									self.fireEvent('itemSelected', {
+										userid:userid,
+										albumid:e.rowData.CatalogId,
+										sidecode:sidecode,
+										useremail:useremail
 									});
-									self.add(table);
-									table.addEventListener('click', function(e) {
-										self.fireEvent('itemSelected', {
-											userid:userid,
-											albumid:e.rowData.CatalogId
-										});
-									});
-									Ti.API.info("==========OK=============");
-						         	// for(i=0;i<res.albums.length;i++)
-						         	// {
-						         		// Ti.API.info("CatalogId:" + res.albums[i].CatalogId);
-						         		// Ti.API.info("CatalogName:" + res.albums[i].CatalogName);
-						         	// }
-						         }
-						     },
-						     // function called when an error occurs, including a timeout
-						     onerror : function(e) {
-						         Ti.API.debug(e.error);
-						         alert(suburl+"|"+'error'+e.error);
-						     },
-						     timeout : 5000  /* in milliseconds */
-						 });
-						 // Prepare the connection.
+								});
+								Ti.API.info("==========OK=============");
+					         }
+					     },
+					     // function called when an error occurs, including a timeout
+					     onerror : function(e) {
+					         Ti.API.debug(e.error);
+					         alert(suburl+"\n"+'error'+e.error);
+					     },
+					     timeout : 5000  /* in milliseconds */
+					 });
+					 // Prepare the connection.
 					 //clientsub.setAutoRedirect=true;
 					 //clientsub.setEnableKeepAlive=true;
 					 clientsub.open("GET", suburl);
@@ -89,22 +87,11 @@ function AlbumView() {
 					 //clientsub.setRequestHeader("Host","dev.invitationsbydawn.com");
 					 clientsub.send();
 				 }
-				 
-				 
-/*		         var res = JSON.parse(this.responseText);
-		            if(res) {
-		            	if(res.status=="OK")
-		            	{
-		            		alert("Location: " + res.geometry.location.lat + ', ' + res.geometry.location.lng);
-		            	}
-		                
-		            }
-*/
 		     },
 		     // function called when an error occurs, including a timeout
 		     onerror : function(e) {
-		         Ti.API.debug(url+"|"+e.error);
-		         alert(url+"|"+e.error);
+		         Ti.API.debug(url+"\n"+e.error);
+		         alert(url+"\n"+e.error);
 		     },
 		     timeout : 5000  /* in milliseconds */
 		 });
@@ -120,8 +107,6 @@ function AlbumView() {
 		
 	});
 	//add behavior
-	
 	return self;
 };
-
 module.exports = AlbumView;

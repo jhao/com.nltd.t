@@ -7,7 +7,7 @@ function UploadPhoto() {
 		message: ' UpLoading...',
 	});
 	self.orientationModes = [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT];
-	var albumid='',userid='';
+	var albumid='',userid='',sidecode='';
 	var popoverView;
 	var arrowDirection;
 	var imageView = Ti.UI.createImageView(
@@ -38,8 +38,9 @@ function UploadPhoto() {
 	var dialog = Ti.UI.createOptionDialog(
 	{
 		title: 'Choose source',
-		options: ['Take a photo', 'Choose from existing', 'Upload from Facebook', 'Upload from Instagram', 'Cancel'],
-		cancel: 4
+		//options: ['Take a photo', 'Choose from existing', 'Upload from Facebook', 'Upload from Instagram', 'Cancel'],
+		options: ['Take a photo', 'Choose from existing', 'Cancel'],
+		cancel: 2
 	});
 	
 	imageView.addEventListener('click', function (e)
@@ -49,6 +50,7 @@ function UploadPhoto() {
 	self.addEventListener('uploadimage', function (e){
 		albumid=e.albumid;
 		userid=e.userid;
+		sidecode=e.sidecode;
 	});
 	dialog.addEventListener('click', function (e)
 	{
@@ -75,7 +77,7 @@ function UploadPhoto() {
 						alert("got the wrong type back =" + event.mediaType);
 					}
 					imageView.remove(label1);
-					self.fireEvent('uploading',{albumid:albumid,userid:userid,title:title});
+					self.fireEvent('uploading',{albumid:albumid,userid:userid,title:title,sidecode:sidecode});
 				},
 				cancel: function ()
 				{},
@@ -129,7 +131,7 @@ function UploadPhoto() {
 					}
 					Ti.API.info('PHOTO GALLERY SUCCESS cropRect.x ' + cropRect.x + ' cropRect.y ' + cropRect.y + ' cropRect.height ' + cropRect.height + ' cropRect.width ' + cropRect.width);
 					imageView.remove(label1);
-					self.fireEvent('uploading',{albumId:albumid,userid:userid,title:title});
+					self.fireEvent('uploading',{albumId:albumid,userid:userid,title:title,sidecode:sidecode});
 				},
 				cancel: function ()
 				{},
@@ -242,10 +244,26 @@ function UploadPhoto() {
 	self.addEventListener('uploading', function (e){
 		activityIndicator.show();
 		//var url="http://192.168.98.34/user/album_file_upload.cmd?albumId="+e.albumId +"&form_state=default_state&userid="+e.userid;
-		var url="https://multisitemanager.theoccasionsgroup.com/user/album_file_upload.cmd?albumId="+e.albumId +"&form_state=default_state&userid="+e.userid;
+		//var domain="https://multisitemanager.theoccasionsgroup.com";
+		var domain = Titanium.App.Properties.getString('url');
+		/*switch(e.sidecode){
+			case "IBD":
+				domain="http://www.invitationsbydawn.com";
+				break;
+			case "IBDB":
+				domain="http://www.invitationsbydavidsbridal.com";
+				break;
+			case "ANN":
+				domain="http://www.annsbridalbargains.com";
+				break;
+		};*/
+		var url=domain+"/user/album_file_upload.cmd?albumId="+e.albumId +"&form_state=default_state&userid="+e.userid;
+		//var url="http://192.168.98.34:81/UploadToAlbum.aspx?mime=.jpg&albumId="+e.albumId +"&form_state=default_state&userid="+e.userid;
 		var name ="Filedata";
 		var filename = e.title;
 		var xhr = Titanium.Network.createHTTPClient();
+		/* 
+		// sencond method for upload, it has a bug: encoding is error;
 		var boundary = '----12345568790';  
 		var header =  "--" + boundary + "\r\n" + "Content-Disposition: form-data;name=\"albumId\"\r\n\r\n" + e.albumId + "\r\n";  
 		header += "--" + boundary + "\r\n" + "Content-Disposition: form-data;name=\"userid\"\r\n\r\n" + e.userid + "\r\n";  
@@ -258,35 +276,33 @@ function UploadPhoto() {
 		//header += "Content-Transfer-Encoding:Base64\r\n\r\n"
 		//Ti.API.info("======\n:imageView.image:"+imageView.image);  
 		//var file    = Titanium.Filesystem.getFile(imageView.image.nativePath);
+		*/
+		// transfer a image to a file data format;
 		var tempFile = Titanium.Filesystem.createTempFile();
-		
 		tempFile.write(imageView.image);
-		
 		var contents = tempFile.read();
+		//var content = contents.text;
+		////construct an byte string of image. but the encoding is wrong.
 		//var file = Titanium.Filesystem.getFile(tempFile.getNativePath);
 		//file.open(Titanium.Filesystem.FILESTREAM_MODE_READ);
 		//var contents = file.read();
-
-		//var uploadStream = Titanium.Filesystem.getFileStream(file);  
-		//uploadStream.open(Titanium.Filesystem.FILESTREAM_MODE_READ);  
-		//var content = uploadStream.read();
-		var content = contents.text;
 		//uploadStream.close();
 		//var content = file.read();//imageView.image.file.write(	);//.read();
-		var fullContent = header + content + "\r\n--" + boundary + "--";
-		/*
+		//var fullContent = header + content + "\r\n--" + boundary + "--";
+		
+		//construct a form for upload
 		var fullContent  = {
 		  //'albumId' : e.albumId,
 		  //'userid'  : e.userid,
 		  //'form_state' : 'default_state',
-		  'Filedata':imageView.image,
+		  'Filedata':contents,
 		  'Filename':filename
-		};*/
+		};
  		
 		xhr.open("POST",url);  
-   		xhr.setRequestHeader("Content-type", "charset=utf-8;multipart/form-data;boundary=\"" + boundary + "\"");
+   		//xhr.setRequestHeader("Content-type", "multipart/form-data;boundary=\"" + boundary + "\"");
    		//xhr.setRequestHeader("Content-type","application/octet-stream");  
-   		xhr.setRequestHeader("Connection", "keep-Alive");
+   		//xhr.setRequestHeader("Connection", "keep-Alive");
    		Ti.API.info("======1\n:"+fullContent);
    		Ti.API.info("======2\n:"+url);
    		xhr.send(fullContent);
@@ -295,9 +311,16 @@ function UploadPhoto() {
 		   	  if(this.status==200)
 		   	  {
 		      	activityIndicator.hide();
-		      	alert("successed:"+this.responseText);
+		      	alert("successed:");
+		      	self.fireEvent('return', {
+					userid:e.userid,
+					albumid:e.albumid,
+					sidecode:e.sidecode,
+					useremail:e.useremail
+				});
 		      }else
 		      {
+		      	activityIndicator.hide();
 		      	alert("failed");
 		      }
 		   }  

@@ -2,19 +2,9 @@ function ImagesView() {
 	var self = Ti.UI.createView({
 		backgroundColor:'white',
 	});
-	
-	//some dummy data for our table view
-	/*var tableData = [];
-	
-	var table = Ti.UI.createTableView({
-		data:tableData
-	});
-	
-	self.add(table);
-	*/
 
-	
 	self.addEventListener('imageSelected', function(e) {
+		self.fireEvent('showprocess', e);
 		if( self.children ){
 			  while( self.children.length > 0 ) {
 			    //Ti.API.info( 'Number of children: ' + possibleTagViewArea.children.length );
@@ -25,12 +15,16 @@ function ImagesView() {
 		}
 		var albumid=e.albumid;
 		var userid=e.userid;
-		var url = "https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_images_album.jsp?albumId="+e.albumid+"&userid="+e.userid;
+		var sidecode = e.sidecode;
+		var useremail = e.useremail;
+		//var url = "https://multisitemanager.theoccasionsgroup.com/catalog/pegasus/get_images_album.jsp?albumId="+e.albumid+"&userid="+e.userid;
+		var url = Titanium.App.Properties.getString('url')+"/catalog/pegasus/get_images_album.jsp?albumId="+e.albumid+"&userid="+e.userid;
 		 //url='http://maps.googleapis.com/maps/api/geocode/json?address=tianjin&region=us&sensor=true';
 		 Ti.API.info("url: " + url);
 		 var client = Ti.Network.createHTTPClient({
 		     // function called when the response data is available
 		     onload : function(e) {
+		         // get the image list from url
 		         Ti.API.info("Received text: " + this.responseText);
 		         var retstr= this.responseText.replace(/\r\n/g,"").replace(/\n/g,"").replace('	','').replace(',]',']');
 		         Ti.API.info("subReceived text: " + retstr);
@@ -38,25 +32,28 @@ function ImagesView() {
 		         if(res)
 		         {
 		         	 var res_images=res.albumImages;
+		         	 // create data table
 					 var table = Ti.UI.createTableView({top:40});
 					 var currentData = [];
 					 for (var i=0;i<res_images.length;i++) {
-					 	var tweet = res_images[i];
+					 	var image = res_images[i];
+					 	// create one row
 					 	var row = Ti.UI.createTableViewRow(  
 				            {  
 				                top:40,
 				                height: 'auto',  
 				                layout: 'absolute',
-				                title:tweet.title,
-						        V : tweet.V,
-						        Width:tweet.Width,
-						        Height:tweet.Height,
-						        Dpi:tweet.Dpi
+				                title:image.title,
+						        V : image.V,
+						        Width:image.Width,
+						        Height:image.Height,
+						        Dpi:image.Dpi
 				            }  
 				        );
+				        //create a image view for display picture
 				        var imageView = Ti.UI.createImageView(  
 					        {  
-					            image: "http://media.theoccasionsgroup.com/is/image//user-uploads/"+tweet.V,  
+					            image: "http://media.theoccasionsgroup.com/is/image//user-uploads/"+image.V,  
 					            width: 48,  
 					            height: 48,  
 					            top: 5,  
@@ -64,6 +61,7 @@ function ImagesView() {
 					        }  
 					    ); 
 					    row.add(imageView); 
+					    //create a label for store the name of picture
 					    var nameLabel = Ti.UI.createLabel(  
 				            {  
 				                width: 120,  
@@ -75,8 +73,9 @@ function ImagesView() {
 				                color: '#2b4771'  
 				            }  
 				        ); 
-				        nameLabel.text = tweet.title; 
+				        nameLabel.text = image.title; 
 						row.add(nameLabel); 
+						// add comment for picture
 						// var commentLabel = Ti.UI.createLabel(  
 				            // {  
 				                // width: 257,  
@@ -86,25 +85,39 @@ function ImagesView() {
 				                // fontSize: 8  
 				            // }  
 				        // );  
-				        // commentLabel.text = tweet.title;  
+				        // commentLabel.text = image.title;  
 				        // row.add(commentLabel);
 				        //row.setData()
 				        currentData.push(row);
 					 }
 					 table.setData(currentData);
 					 self.add(table);
+					 // add button for upload					 
 					 var btn= Ti.UI.createButton({
 						top:5,
-						left:5,
-						width:'auto',
+						left:75,
+						width:80,
 						height:30,
 						title:'upload photo'
 					 });
 					 btn.addEventListener('click', function(e) {
 						//Ti.API.info("upload btn click:"+e.albumid+"-"+e.userid);
-						self.fireEvent('uploadopen', {albumid:albumid,userid:userid});
+						self.fireEvent('uploadopen', {albumid:albumid,userid:userid,sidecode:sidecode,useremail:useremail});
 					 });
 					 self.add(btn);
+					 // add a button for return;
+					 var btnback= Ti.UI.createButton({
+						top:5,
+						left:5,
+						width:70,
+						height:30,
+						title:'return'
+					 });
+					 btnback.addEventListener('click', function(e) {
+						//Ti.API.info("upload btn click:"+e.albumid+"-"+e.userid);
+						self.fireEvent('back', {name:useremail,sitecode:sidecode});
+					 });
+					 self.add(btnback);
 					 table.addEventListener('click', function(e) {
 						Ti.API.info("e.rowData,: " + e.rowData.title +","+e.rowData.V+","+e.rowData.Width);
 						self.fireEvent('imagesSelected', {
@@ -122,8 +135,8 @@ function ImagesView() {
 		     },
 		     // function called when an error occurs, including a timeout
 		     onerror : function(e) {
-		         Ti.API.debug(url+"|"+e.error);
-		         alert(url+"|"+e.error);
+		         Ti.API.debug(url+"\n"+e.error);
+		         alert(url+"\n"+e.error);
 		     },
 		     timeout : 5000  /* in milliseconds */
 		 });

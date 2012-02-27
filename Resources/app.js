@@ -30,6 +30,8 @@ else {
 	
 	//require and open top level UI component
 	var Window;
+	//Titanium.App.Properties.setString('url','http://192.168.98.34');
+	Titanium.App.Properties.setString('url','https://multisitemanager.theoccasionsgroup.com');
 	if (isTablet) {
 		Window = require('ui/tablet/ApplicationWindow');
 	}
